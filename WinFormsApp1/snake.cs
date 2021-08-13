@@ -10,10 +10,9 @@ using System.Windows.Forms;
 //using UsedDrawControl = System.Windows.Forms.PictureBox;  //задать контрол, который будет исп-ся для рисования
 using UsedDrawControl = System.Windows.Forms.Label;         //задать контрол, который будет исп-ся для рисования
 
-namespace nsSnake {
-	 public partial class Form1 : Form {
-	 
-			public int maxFruitCnt = 1;		//пока что больше не поддерживается
+	 public class Snake {
+
+			public int maxFruitCnt = 1;   //пока что больше не поддерживается
 			public int maxStoneCnt;
 			public int maxTreesCnt;
 			public int maxWaterCnt;
@@ -28,15 +27,15 @@ namespace nsSnake {
 			public int BrickSize;
 			public int MapSizeX = -1; //кол-во линий должно быть на 1 больше, чем кол-во клеток
 			public int MapSizeY = -1;
-			
+
 			public int ExtFieldWidth = 100;
 			public int SnakeSpeed;
 
 			private int Score;         //длина змейки
-			private int FruitCnt ;
-			private int StoneCnt ;
-			private int TreesCnt ;
-			private int WaterCnt ;
+			private int FruitCnt;
+			private int StoneCnt;
+			private int TreesCnt; 
+			private int WaterCnt;
 
 			private UsedDrawControl[] snake = new UsedDrawControl[100];
 			private UsedDrawControl[] Fruits = new UsedDrawControl[10];
@@ -50,9 +49,9 @@ namespace nsSnake {
 			private int dirX, dirY;         //коеф. умножения (-1, +1), задающие направление движения 
 			private int snX, snY;           //позиция головы змейки
 			private int tail = 0;           //позиция хвоста
-			//private int head = 0;           //позиция головы
-			//private class UsedDrawControl : System.Windows.Forms.PictureBox { }       //задать контрол, который будет исп-ся для рисования (вар.2)
-			//private class UsedDrawControl : System.Windows.Forms.Label { }            //задать контрол, который будет исп-ся для рисования (вар.2)
+																			//private int head = 0;           //позиция головы
+																			//private class UsedDrawControl : System.Windows.Forms.PictureBox { }       //задать контрол, который будет исп-ся для рисования (вар.2)
+																			//private class UsedDrawControl : System.Windows.Forms.Label { }            //задать контрол, который будет исп-ся для рисования (вар.2)
 
 			int[,] TreeMap =
 				{{ 1, 1, 1 },
@@ -73,10 +72,10 @@ namespace nsSnake {
 				 Snake = 1,
 				 Fruit = 2,
 				 Stone = 4,
-				 Tree	 = 8,
+				 Tree = 8,
 				 Water = 16,
-				 All	 = 31,
-				 Any	 = -1
+				 All = 31,
+				 Any = -1
 			}
 
 			public Form1() {
@@ -88,12 +87,12 @@ namespace nsSnake {
 				 tbStones.Text = "7";
 				 tbWater.Text = "3";
 				 tbTrees.Text = "3";
-				 _GenerateMap(); 
+				 _GenerateMap();
 				 //this.KeyDown += new KeyEventHandler(OKD);
 				 timer.Tick += new EventHandler(UpdateSnake);
 				 StartGame();
 			}
-			
+
 			#region Проверка попадания на предмет..
 			//занимает ли УКАЗАННЫЙ объект точку с координатами X, Y 
 			private ElemType CheckArr(Point loc, UsedDrawControl[] arr, int arr_len) {
@@ -109,27 +108,27 @@ namespace nsSnake {
 				 ElemType RetVal = 0;
 				 //проверка попадания на змейку
 				 if ((et & ElemType.Snake) > 0) {
-						if (CheckArr(loc, snake,Score) !=0) 
-							 RetVal |= ElemType.Snake; 
+						if (CheckArr(loc, snake, Score) != 0)
+							 RetVal |= ElemType.Snake;
 				 }
 				 //проверка поедания фрукта
 				 if ((et & ElemType.Fruit) > 0) {
-						if (CheckArr(loc, Fruits, FruitCnt) != 0) 
+						if (CheckArr(loc, Fruits, FruitCnt) != 0)
 							 RetVal |= ElemType.Fruit;
 				 }
 				 //проверка попадания на камень
 				 if ((et & ElemType.Stone) > 0) {
-						if (CheckArr(loc, Stones, StoneCnt) != 0) 
+						if (CheckArr(loc, Stones, StoneCnt) != 0)
 							 RetVal |= ElemType.Stone;
 				 }
 				 //проверка попадания на дерево
 				 if ((et & ElemType.Tree) > 0) {
-						if (CheckArr(loc, Trees, TreesCnt) != 0) 
+						if (CheckArr(loc, Trees, TreesCnt) != 0)
 							 RetVal |= ElemType.Tree;
 				 }
 				 //проверка попадания в воду
 				 if ((et & ElemType.Water) > 0) {
-						if (CheckArr(loc, WaterSpots, WaterCnt) != 0) 
+						if (CheckArr(loc, WaterSpots, WaterCnt) != 0)
 							 RetVal |= ElemType.Water;
 				 }
 				 return RetVal;
@@ -206,8 +205,8 @@ namespace nsSnake {
 
 			private void ClearObject(UsedDrawControl[] arr, ref int arr_len) {
 				 //очистка массива объектов
-				 if (arr[0] != null) { 
-						for (int i = arr_len; i >= 0; i--) { 
+				 if (arr[0] != null) {
+						for (int i = arr_len; i >= 0; i--) {
 							 Controls.Remove(arr[i]);
 							 arr[i] = null;
 						}
@@ -228,9 +227,9 @@ namespace nsSnake {
 				 lblScore.Text = "0";
 
 				 tail = 0; Score = 0; //head = 0;
-				 //dirX = 1; dirY = 0; 
-				 //snX = MapSizeX / 2;
-				 //snY = MapSizeY / 2;
+															//dirX = 1; dirY = 0; 
+															//snX = MapSizeX / 2;
+															//snY = MapSizeY / 2;
 
 				 //разместить все объекты на карте
 				 if (AllocateElement(ElemType.Fruit, maxFruitCnt, Fruits, ref FruitCnt, fruitColor, OnePointMap) != 0) { MessageBox.Show("Не удаётся разместить фрукты на карте. Измените параметры"); return; }
@@ -269,7 +268,7 @@ namespace nsSnake {
 				 //цикл по кол-ву создаваемых элементов
 				 for (int i = 0; i < cnt; i++) {
 						//размещаемый элемент д.б. на пусом месте.
-						int ok = 0;					 //успешное размещение всего объекта
+						int ok = 0;          //успешное размещение всего объекта
 						ElemType ok_i = 0;   //успешное размещение очередной точки объекта
 						do {
 							 ok += 1;   //счётчик попыток
@@ -282,16 +281,17 @@ namespace nsSnake {
 									for (int y = 0; y <= map_height; y++) {
 										 for (int x = 0; x <= map_width; x++) {
 												//если точка не отображается, взять следующую координату
-												if (map[y, x] == 0) continue;    
+												if (map[y, x] == 0) continue;
 												loc_i.X = loc.X + x * BrickSize;
 												loc_i.Y = loc.Y + y * BrickSize;
 												//если проход первый, только выполняем проверку, пустое ли место
-												if (path==1) {
+												if (path == 1) {
 													 //проверка попадания на другой объект
 													 ok_i = ChekPosition(loc_i, ElemType.All);
-													 if (ok_i > 0) break;		 //надо брать слудующую начальную координату всего объекта
-												} else {
-												//проход 2й - размещение элемента на карте
+													 if (ok_i > 0) break;    //надо брать слудующую начальную координату всего объекта
+												}
+												else {
+													 //проход 2й - размещение элемента на карте
 													 arr[arr_len] = new UsedDrawControl();
 													 arr[arr_len].Size = new Size(BrickSize, BrickSize);
 													 arr[arr_len].BackColor = color;
@@ -300,9 +300,9 @@ namespace nsSnake {
 													 arr_len += 1;
 												}
 										 }
-										 if (ok_i > 0) break;		 //надо брать слудующую начальную координату всего объекта
+										 if (ok_i > 0) break;    //надо брать слудующую начальную координату всего объекта
 									}
-									if (ok_i != 0) break;			 //надо брать слудующую начальную координату всего объекта
+									if (ok_i != 0) break;      //надо брать слудующую начальную координату всего объекта
 							 }
 							 //если все точки объекта отображены, выход из цикла с попытками разместить объект
 							 if (ok_i == 0) ok = 0;
@@ -330,23 +330,25 @@ namespace nsSnake {
 
 				 //добавить недостающие горизонт линии
 				 for (int i = MapSizeY; i < _MapSizeY; i++) {
-						UsedDrawControl FieldGrid = new UsedDrawControl {
+						UsedDrawControl FieldGrid = new UsedDrawControl
+						{
 							 BackColor = Color.Black,
 							 Size = new Size(1, 1),
 							 Location = new Point(0, 0)
 						};
 						Controls.Add(FieldGrid);
-						LinesX[i+1] = FieldGrid;
+						LinesX[i + 1] = FieldGrid;
 				 }
 				 //добавить недостающие верт линии
 				 for (int i = MapSizeX; i < _MapSizeX; i++) {
-						UsedDrawControl FieldGrid = new UsedDrawControl {
+						UsedDrawControl FieldGrid = new UsedDrawControl
+						{
 							 BackColor = Color.Black,
-							 Size = new Size(1,1),
-							 Location = new Point(0,0)
+							 Size = new Size(1, 1),
+							 Location = new Point(0, 0)
 						};
 						Controls.Add(FieldGrid);
-						LinesY[i+1] = FieldGrid;
+						LinesY[i + 1] = FieldGrid;
 				 }
 				 MapSizeX = _MapSizeX;
 				 MapSizeY = _MapSizeY;
@@ -410,9 +412,9 @@ namespace nsSnake {
 				 switch (e.KeyCode) {
 						case Keys.Left:
 						case Keys.Right:
-						case Keys.Up: 
-						case Keys.Down: 
-							 if (start) { timer.Start(); start = false; } 
+						case Keys.Up:
+						case Keys.Down:
+							 if (start) { timer.Start(); start = false; }
 							 break;
 				 }
 			}
@@ -468,4 +470,3 @@ namespace nsSnake {
 			//}
 
 	 }
-}
