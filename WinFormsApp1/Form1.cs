@@ -10,61 +10,61 @@ using System.Windows.Forms;
 //using UsedDrawControl = System.Windows.Forms.PictureBox;  //задать контрол, который будет исп-ся для рисования
 using UsedDrawControl = System.Windows.Forms.Label;         //задать контрол, который будет исп-ся для рисования
 
-namespace nsSnake {
+namespace Snake {
 	 public partial class Form1 : Form {
 	 
-			public int maxFruitCnt = 1;		//пока что больше не поддерживается
+			  public int maxFruitCnt = 1;		//пока что больше не поддерживается
 			public int maxStoneCnt;
 			public int maxTreesCnt;
 			public int maxWaterCnt;
 
-			public Color snakeColor = Color.Gray;
-			public Color snakeEatColor = Color.Gray;
-			public Color fruitColor = Color.Red;
+			  public Color snakeColor = Color.Gray;
+			  public Color snakeEatColor = Color.Gray;
+			  public Color fruitColor = Color.Red;
 			public Color treeColor = Color.Green;
 			public Color stoneColor = Color.Black;
 			public Color waterColor = Color.Blue;
 
-			public int BrickSize;
-			public int MapSizeX = -1; //кол-во линий должно быть на 1 больше, чем кол-во клеток
-			public int MapSizeY = -1;
+			  public int BrickSize;
+			  public int currMapWidth = -1;   //кол-во линий должно быть на 1 больше, чем кол-во клеток
+			  public int currMapHeight = -1;
 			
-			public int ExtFieldWidth = 100;
-			public int SnakeSpeed;
+			  public int ExtFieldWidth = 100;
+			  public int SnakeSpeed;
 
-			private int Score;         //длина змейки
-			private int FruitCnt ;
+			  private int Score;          //длина змейки
+			  private int FruitCnt ;
 			private int StoneCnt ;
 			private int TreesCnt ;
 			private int WaterCnt ;
 
-			private UsedDrawControl[] snake = new UsedDrawControl[100];
-			private UsedDrawControl[] Fruits = new UsedDrawControl[10];
+			  private UsedDrawControl[] snake = new UsedDrawControl[100];
+			  private UsedDrawControl[] Fruits = new UsedDrawControl[10];
 			private UsedDrawControl[] Stones = new UsedDrawControl[60];
 			private UsedDrawControl[] WaterSpots = new UsedDrawControl[200];
 			private UsedDrawControl[] Trees = new UsedDrawControl[200];
-			private UsedDrawControl[] LinesX = new UsedDrawControl[200];
-			private UsedDrawControl[] LinesY = new UsedDrawControl[200];
+			  private UsedDrawControl[] LinesX = new UsedDrawControl[200];
+			  private UsedDrawControl[] LinesY = new UsedDrawControl[200];
 
-			private bool start = false;
-			private int dirX, dirY;         //коеф. умножения (-1, +1), задающие направление движения 
-			private int snX, snY;           //позиция головы змейки
-			private int tail = 0;           //позиция хвоста
+			  private bool start = false;
+			  private int dirX, dirY;         //коеф. умножения (-1, +1), задающие направление движения 
+			  private int snX, snY;           //позиция головы змейки
+			  private int tail = 0;           //позиция хвоста
 			//private int head = 0;           //позиция головы
 			//private class UsedDrawControl : System.Windows.Forms.PictureBox { }       //задать контрол, который будет исп-ся для рисования (вар.2)
 			//private class UsedDrawControl : System.Windows.Forms.Label { }            //задать контрол, который будет исп-ся для рисования (вар.2)
 
-			int[,] TreeMap =
-				{{ 1, 1, 1 },
-				 { 1, 1, 1 },
-				 { 1, 1, 1 },
-				 { 0, 1, 0 },
-				 { 0, 1, 0 }};
+			int[,] TreeMap = {
+				{ 1, 1, 1 },
+				{ 1, 1, 1 },
+				{ 1, 1, 1 },
+				{ 0, 1, 0 },
+				{ 0, 1, 0 } };
 
-			int[,] WaterSpotMap =
-				{{ 0, 1, 1, 0 },
-				 { 1, 1, 1, 1 },
-				 { 0, 1, 1, 0 }};
+			int[,] WaterSpotMap = {
+				{ 0, 1, 1, 0 },
+				{ 1, 1, 1, 1 },
+				{ 0, 1, 1, 0 } };
 
 			int[,] OnePointMap = { { 1 }, { 0 } };
 
@@ -80,19 +80,19 @@ namespace nsSnake {
 			}
 
 			public Form1() {
-				 InitializeComponent();
-				 tbBrickSize.Text = "15";
-				 tbMapHeight.Text = "30";
-				 tbMapWidth.Text = "30";
-				 tbSpeed.Text = "100";
-				 tbStones.Text = "7";
-				 tbWater.Text = "3";
-				 tbTrees.Text = "3";
-				 _GenerateMap(); 
-				 //this.KeyDown += new KeyEventHandler(OKD);
-				 timer.Tick += new EventHandler(UpdateSnake);
-				 StartGame();
-			}
+				  InitializeComponent();
+            //Controls["tbBrickSize"].Text = "15";
+            //Controls["tbMapHeight"].Text = "30";
+            //Controls["tbMapWidth"].Text = "30";
+          //tbSpeed.Text = "100";
+          //tbStones.Text = "7";
+          //tbWater.Text = "3";
+          //tbTrees.Text = "3";
+          //_GenerateMap();
+          ////this.KeyDown += new KeyEventHandler(OKD);
+          //timer.Tick += new EventHandler(UpdateSnake);
+          //StartGame();
+      }
 			
 			#region Проверка попадания на предмет..
 			//занимает ли УКАЗАННЫЙ объект точку с координатами X, Y 
@@ -143,7 +143,7 @@ namespace nsSnake {
 				 Point loc = new Point(snX * BrickSize, snY * BrickSize);
 
 				 //проверка выхода за границы
-				 if (snX < 0 || snX == MapSizeX || snY < 0 || snY == MapSizeY) {
+				 if (snX < 0 || snX == currMapWidth || snY < 0 || snY == currMapHeight) {
 						timer.Stop();
 						MessageBox.Show("Вы проиграли!");
 						StartGame();
@@ -229,8 +229,8 @@ namespace nsSnake {
 
 				 tail = 0; Score = 0; //head = 0;
 				 //dirX = 1; dirY = 0; 
-				 //snX = MapSizeX / 2;
-				 //snY = MapSizeY / 2;
+				 //snX = currMapWidth / 2;
+				 //snY = currMapHeight / 2;
 
 				 //разместить все объекты на карте
 				 if (AllocateElement(ElemType.Fruit, maxFruitCnt, Fruits, ref FruitCnt, fruitColor, OnePointMap) != 0) { MessageBox.Show("Не удаётся разместить фрукты на карте. Измените параметры"); return; }
@@ -275,7 +275,7 @@ namespace nsSnake {
 							 ok += 1;   //счётчик попыток
 
 							 //получить случайную координату лев. верхнего угла размещаемого объекта
-							 loc = new Point(BrickSize * r.Next(0, MapSizeX - map_width - 1), BrickSize * r.Next(0, MapSizeY - map_height - 1));
+							 loc = new Point(BrickSize * r.Next(0, currMapWidth - map_width - 1), BrickSize * r.Next(0, currMapHeight - map_height - 1));
 
 							 //производим предварительную проверку, не попадают ли все точки элемента на что-то другое 
 							 for (int path = 1; path <= 2; path++) {
@@ -314,22 +314,22 @@ namespace nsSnake {
 			}
 
 			private void _GenerateMap() {
-				 int _MapSizeX = Convert.ToInt32(tbMapWidth.Text);
-				 int _MapSizeY = Convert.ToInt32(tbMapHeight.Text);
-				 BrickSize = Convert.ToInt32(tbBrickSize.Text);
+				 int _currMapWidth = Convert.ToInt32(this.Controls["tbMapWidth"].Text);
+				 int _currMapHeight = Convert.ToInt32(Controls["tbMapHeight"].Text);
+				 BrickSize = Convert.ToInt32(Controls["tbBrickSize"].Text);
 
 				 //сперва удалить лишние горизонт и верт линии
-				 for (int i = MapSizeY; i > _MapSizeY; i--) {
+				 for (int i = currMapHeight; i > _currMapHeight; i--) {
 						Controls.Remove(LinesX[i]);
 						LinesX[i] = null;
 				 }
-				 for (int i = MapSizeX; i > _MapSizeX; i--) {
+				 for (int i = currMapWidth; i > _currMapWidth; i--) {
 						Controls.Remove(LinesY[i]);
 						LinesY[i] = null;
 				 }
 
 				 //добавить недостающие горизонт линии
-				 for (int i = MapSizeY; i < _MapSizeY; i++) {
+				 for (int i = currMapHeight; i < _currMapHeight; i++) {
 						UsedDrawControl FieldGrid = new UsedDrawControl {
 							 BackColor = Color.Black,
 							 Size = new Size(1, 1),
@@ -339,7 +339,7 @@ namespace nsSnake {
 						LinesX[i+1] = FieldGrid;
 				 }
 				 //добавить недостающие верт линии
-				 for (int i = MapSizeX; i < _MapSizeX; i++) {
+				 for (int i = currMapWidth; i < _currMapWidth; i++) {
 						UsedDrawControl FieldGrid = new UsedDrawControl {
 							 BackColor = Color.Black,
 							 Size = new Size(1,1),
@@ -348,17 +348,17 @@ namespace nsSnake {
 						Controls.Add(FieldGrid);
 						LinesY[i+1] = FieldGrid;
 				 }
-				 MapSizeX = _MapSizeX;
-				 MapSizeY = _MapSizeY;
+				 currMapWidth = _currMapWidth;
+				 currMapHeight = _currMapHeight;
 
 				 //подгонка макета формы
-				 Width = MapSizeX * BrickSize + ExtFieldWidth;
-				 Height = (MapSizeY + 1) * BrickSize + 25;
+				 Width = currMapWidth * BrickSize + ExtFieldWidth;
+				 Height = (currMapHeight + 1) * BrickSize + 25;
 				 btnStart.Left = this.Width - ExtFieldWidth + 10;
 				 btnStart.Width = ExtFieldWidth - 30;
 				 lblScoreLabel.Left = this.Width - ExtFieldWidth + 10;
 				 lblScore.Left = lblScoreLabel.Bounds.Right;
-
+         /*
 				 //Stones
 				 lblStonesLabel.Left = this.Width - ExtFieldWidth + 5;
 				 tbStones.Left = lblStonesLabel.Bounds.Right;
@@ -376,26 +376,26 @@ namespace nsSnake {
 				 tbSpeed.Left = lblStonesLabel.Bounds.Right;
 				 SnakeSpeed = Convert.ToInt32(tbSpeed.Text);
 				 timer.Interval = SnakeSpeed;
-
+         
 				 //MapWidth
-				 lblMapX.Left = this.Width - ExtFieldWidth + 5;
-				 tbMapWidth.Left = lblStonesLabel.Bounds.Right;
+				 Controls["lblMapWidth"].Left = this.Width - ExtFieldWidth + 5;
+				 Controls["tbMapWidth"].Left = lblStonesLabel.Bounds.Right;
 				 //MapHeight
-				 lblMapY.Left = this.Width - ExtFieldWidth + 5;
-				 tbMapHeight.Left = lblStonesLabel.Bounds.Right;
+				 Controls["lblMapHeight"].Left = this.Width - ExtFieldWidth + 5;
+				 Controls["tbMapHeight"].Left = lblStonesLabel.Bounds.Right;
 				 //BrickSize
-				 lblBrickSize.Left = this.Width - ExtFieldWidth + 5;
-				 tbBrickSize.Left = lblStonesLabel.Bounds.Right;
-
+				 Controls["lblBrickSize"].Left = this.Width - ExtFieldWidth + 5;
+				 Controls["tbBrickSize"].Left = lblStonesLabel.Bounds.Right;
+         */
 				 //правим размеры горизонт линии
-				 for (int i = 0; i <= MapSizeY; i++) {
-						LinesX[i].Size = new Size(MapSizeX * BrickSize, 1);
+				 for (int i = 0; i <= currMapHeight; i++) {
+						LinesX[i].Size = new Size(currMapWidth * BrickSize, 1);
 						LinesX[i].Location = new Point(0, i * BrickSize);
 				 }
 
 				 //правим размеры вертик линии
-				 for (int i = 0; i <= MapSizeX; i++) {
-						LinesY[i].Size = new Size(1, MapSizeY * BrickSize);
+				 for (int i = 0; i <= currMapWidth; i++) {
+						LinesY[i].Size = new Size(1, currMapHeight * BrickSize);
 						LinesY[i].Location = new Point(i * BrickSize, 0);
 				 }
 			}
@@ -457,7 +457,7 @@ namespace nsSnake {
 			//			//фрукты не должны попадать на змейку, камни, воду, деревья или другой фрукт
 			//			bool ok = false; Point loc;
 			//			do {
-			//				 loc = new Point(_BrickSize * r.Next(0, _MapSizeX), _BrickSize * r.Next(0, _MapSizeY));
+			//				 loc = new Point(_BrickSize * r.Next(0, _currMapWidth), _BrickSize * r.Next(0, _currMapHeight));
 			//				 //проверка попадания фрукта на змейку, камень, дерево, воду или другой фрукт
 			//				 if (ChekPosition(loc, ElemType.All) == 0) ok = true;
 			//			} while (!ok);

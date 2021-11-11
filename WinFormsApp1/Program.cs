@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Snake;
 
-namespace nsSnake
+namespace Snake
 {
     static class Program
     {
@@ -17,7 +18,10 @@ namespace nsSnake
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            
+            Snake snake = new Snake();
+            Application.Run(snake.GetForm);
+            //Application.Run(new Form1());
         }
     }
 }
