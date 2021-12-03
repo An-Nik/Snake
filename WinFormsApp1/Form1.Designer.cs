@@ -25,27 +25,18 @@ namespace Snake {
     /// </summary>
     private void InitializeComponent() {
       this.components = new System.ComponentModel.Container();
-      this.timer = new System.Windows.Forms.Timer(this.components);
-      this.btnStart = new System.Windows.Forms.Button();
+      this.form_timer = new System.Windows.Forms.Timer(this.components);
       this.lblScoreLabel = new System.Windows.Forms.Label();
       this.lblScore = new System.Windows.Forms.Label();
+      this.grParams = new System.Windows.Forms.GroupBox();
+      this.btnGenerateMap = new System.Windows.Forms.Button();
+      this.grParams.SuspendLayout();
       this.SuspendLayout();
-      // 
-      // btnStart
-      // 
-      this.btnStart.Location = new System.Drawing.Point(410, 38);
-      this.btnStart.Name = "btnStart";
-      this.btnStart.Size = new System.Drawing.Size(60, 23);
-      this.btnStart.TabIndex = 0;
-      this.btnStart.Text = "Start";
-      this.btnStart.UseVisualStyleBackColor = true;
-      this.btnStart.Click += new System.EventHandler(this.btnStart_Click);
-      this.btnStart.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.btnStart_PreviewKeyDown);
       // 
       // lblScoreLabel
       // 
       this.lblScoreLabel.AutoSize = true;
-      this.lblScoreLabel.Location = new System.Drawing.Point(410, 8);
+      this.lblScoreLabel.Location = new System.Drawing.Point(6, 21);
       this.lblScoreLabel.Name = "lblScoreLabel";
       this.lblScoreLabel.Size = new System.Drawing.Size(39, 15);
       this.lblScoreLabel.TabIndex = 1;
@@ -54,34 +45,59 @@ namespace Snake {
       // lblScore
       // 
       this.lblScore.AutoSize = true;
-      this.lblScore.Location = new System.Drawing.Point(448, 8);
+      this.lblScore.Location = new System.Drawing.Point(44, 21);
       this.lblScore.Name = "lblScore";
       this.lblScore.Size = new System.Drawing.Size(13, 15);
       this.lblScore.TabIndex = 2;
       this.lblScore.Text = "0";
       // 
+      // grParams
+      // 
+      this.grParams.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.grParams.Controls.Add(this.btnGenerateMap);
+      this.grParams.Controls.Add(this.lblScore);
+      this.grParams.Controls.Add(this.lblScoreLabel);
+      this.grParams.Location = new System.Drawing.Point(422, 4);
+      this.grParams.Name = "grParams";
+      this.grParams.Size = new System.Drawing.Size(110, 527);
+      this.grParams.TabIndex = 3;
+      this.grParams.TabStop = false;
+      this.grParams.Text = "Параметры";
+      // 
+      // btnGenerateMap
+      // 
+      this.btnGenerateMap.Location = new System.Drawing.Point(6, 46);
+      this.btnGenerateMap.Name = "btnGenerateMap";
+      this.btnGenerateMap.Size = new System.Drawing.Size(98, 23);
+      this.btnGenerateMap.TabIndex = 0;
+      this.btnGenerateMap.Text = "Generate map";
+      this.btnGenerateMap.UseVisualStyleBackColor = true;
+      this.btnGenerateMap.Click += new System.EventHandler(this.btnStart_Click);
+      this.btnGenerateMap.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.btnStart_PreviewKeyDown);
+      // 
       // Form1
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-      this.ClientSize = new System.Drawing.Size(498, 450);
-      this.Controls.Add(this.lblScore);
-      this.Controls.Add(this.lblScoreLabel);
-      this.Controls.Add(this.btnStart);
+      this.ClientSize = new System.Drawing.Size(532, 531);
+      this.Controls.Add(this.grParams);
       this.KeyPreview = true;
       this.Name = "Form1";
       this.Text = "Form1";
       this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyDown);
+      this.grParams.ResumeLayout(false);
+      this.grParams.PerformLayout();
       this.ResumeLayout(false);
-      this.PerformLayout();
 
     }
 
     #endregion
-    private System.Windows.Forms.Timer timer;
-    private System.Windows.Forms.Button btnStart;
+    private System.Windows.Forms.Timer form_timer;
     private System.Windows.Forms.Label lblScoreLabel;
     private System.Windows.Forms.Label lblScore;
+    private System.Windows.Forms.GroupBox grParams;
+    private System.Windows.Forms.Button btnGenerateMap;
   }
 }
 

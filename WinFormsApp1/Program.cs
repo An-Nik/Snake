@@ -1,3 +1,5 @@
+//#define TEST
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +8,7 @@ using System.Windows.Forms;
 using Snake;
 
 namespace Snake
-{
+{ 
     static class Program
     {
         /// <summary>
@@ -18,7 +20,7 @@ namespace Snake
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            
+
             Snake snake = new Snake();
             Application.Run(snake.GetForm);
             //Application.Run(new Form1());

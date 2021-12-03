@@ -38,7 +38,7 @@ namespace Snake {
 			private int TreesCnt ;
 			private int WaterCnt ;
 
-			  private UsedDrawControl[] snake = new UsedDrawControl[100];
+			  private UsedDrawControl[] snakeBodie = new UsedDrawControl[100];
 			  private UsedDrawControl[] Fruits = new UsedDrawControl[10];
 			private UsedDrawControl[] Stones = new UsedDrawControl[60];
 			private UsedDrawControl[] WaterSpots = new UsedDrawControl[200];
@@ -46,7 +46,7 @@ namespace Snake {
 			  private UsedDrawControl[] LinesX = new UsedDrawControl[200];
 			  private UsedDrawControl[] LinesY = new UsedDrawControl[200];
 
-			  private bool start = false;
+			  private bool startFlag = false;
 			  private int dirX, dirY;         //коеф. умножения (-1, +1), задающие направление движения 
 			  private int snX, snY;           //позиция головы змейки
 			  private int tail = 0;           //позиция хвоста
@@ -55,18 +55,20 @@ namespace Snake {
 			//private class UsedDrawControl : System.Windows.Forms.Label { }            //задать контрол, который будет исп-ся для рисования (вар.2)
 
 			int[,] TreeMap = {
-				{ 1, 1, 1 },
-				{ 1, 1, 1 },
-				{ 1, 1, 1 },
-				{ 0, 1, 0 },
-				{ 0, 1, 0 } };
+				  { 1, 1, 1 },
+				  { 1, 1, 1 },
+				  { 1, 1, 1 },
+				  { 0, 1, 0 },
+				  { 0, 1, 0 } 
+      };
 
 			int[,] WaterSpotMap = {
-				{ 0, 1, 1, 0 },
-				{ 1, 1, 1, 1 },
-				{ 0, 1, 1, 0 } };
+				  { 0, 1, 1, 0 },
+				  { 1, 1, 1, 1 },
+				  { 0, 1, 1, 0 } 
+      };
 
-			int[,] OnePointMap = { { 1 }, { 0 } };
+			int[,] OnePointMap = { { 1 }, { 0 } };  //ask ошибка при F11
 
 			enum ElemType {
 				 EmptyField = 0,
@@ -78,9 +80,12 @@ namespace Snake {
 				 All	 = 31,
 				 Any	 = -1
 			}
+      
+      Snake snake;
 
-			public Form1() {
+			public Form1(Snake snake) {
 				  InitializeComponent();
+          this.snake=snake;
             //Controls["tbBrickSize"].Text = "15";
             //Controls["tbMapHeight"].Text = "30";
             //Controls["tbMapWidth"].Text = "30";
@@ -95,24 +100,26 @@ namespace Snake {
       }
 			
 			#region Проверка попадания на предмет..
-			//занимает ли УКАЗАННЫЙ объект точку с координатами X, Y 
+			//занимает ли УКАЗАННЫЙ объект точку с координатами X, Y
 			private ElemType CheckArr(Point loc, UsedDrawControl[] arr, int arr_len) {
-				 if (arr[0] == null) return 0;
+				 if (arr[0] == null) 
+          return 0;
 				 for (int i = 0; i < arr_len; i++) {
-						if (arr[i].Location == loc) return ElemType.Any;
+						if (arr[i].Location == loc)
+              return ElemType.Any;
 				 }
 				 return 0;
 			}
 
-			//метод проверяет, свободна ли позиция с координатами X, Y на поле
+			//проверить, свободна ли позиция с координатами X, Y на поле
 			private ElemType ChekPosition(Point loc, ElemType et) {
 				 ElemType RetVal = 0;
 				 //проверка попадания на змейку
 				 if ((et & ElemType.Snake) > 0) {
-						if (CheckArr(loc, snake,Score) !=0) 
+						if (CheckArr(loc, snakeBodie,Score) !=0) 
 							 RetVal |= ElemType.Snake; 
 				 }
-				 //проверка поедания фрукта
+				 //проверка попадания фрукта
 				 if ((et & ElemType.Fruit) > 0) {
 						if (CheckArr(loc, Fruits, FruitCnt) != 0) 
 							 RetVal |= ElemType.Fruit;
@@ -137,38 +144,39 @@ namespace Snake {
 			#endregion
 
 			private void UpdateSnake(object myObject, EventArgs eventArgs) {
-				 if (!timer.Enabled) return;
-				 //новые координаты головы при движении
-				 snX += dirX; snY += dirY;
-				 Point loc = new Point(snX * BrickSize, snY * BrickSize);
+
+      	  if (!form_timer.Enabled) return;
+				  //новые координаты головы при движении
+				  snX += dirX; snY += dirY;
+				  Point loc = new Point(snX * BrickSize, snY * BrickSize);
 
 				 //проверка выхода за границы
 				 if (snX < 0 || snX == currMapWidth || snY < 0 || snY == currMapHeight) {
-						timer.Stop();
+						form_timer.Stop();
 						MessageBox.Show("Вы проиграли!");
 						StartGame();
 						return;
 				 }
 
 				 //потушить проглоченное яблоко, которое дошло до конца хвоста
-				 if (snake[tail].Width != BrickSize) {
-						snake[tail].Width = BrickSize;
-						snake[tail].Height = BrickSize;
-						snake[tail].BackColor = snakeColor;
-						snake[tail].SendToBack();
+				 if (snakeBodie[tail].Width != BrickSize) {
+						snakeBodie[tail].Width = BrickSize;
+						snakeBodie[tail].Height = BrickSize;
+						snakeBodie[tail].BackColor = snakeColor;
+						snakeBodie[tail].SendToBack();
 				 }
 
 				 //координаты уже вычислены, но элемент ещё не перемещён в новое место, поэтому сперва сделаем
 				 //проверка укуса саму себя или камня
 				 if (ChekPosition(loc, ElemType.Snake | ElemType.Stone) > 0) {
-						timer.Stop();
+						form_timer.Stop();
 						MessageBox.Show("Вы проиграли!");
 						StartGame();
 						return;
 				 }
 
 				 //переместить последний элемент змейки на место новой позиции головы
-				 snake[tail].Location = loc;
+				 snakeBodie[tail].Location = loc;
 
 				 //проверка поедания фрукта
 				 if (ChekPosition(loc, ElemType.Fruit) > 0) {
@@ -179,7 +187,7 @@ namespace Snake {
 
 						//и так, змейка наехала на фрукт. В этой точке одновременно наложены друг на друга два объекта - и фркут и голова змейки
 						//т.к. размер змейки мы увеличили (score++), надо заполнить новый элемент массива. Направляем его на голову змейки (на которую сейчас указывает индекс tail)
-						snake[Score] = snake[tail];
+						snakeBodie[Score] = snakeBodie[tail];
 
 						Fruits[0].Width += BrickSize / 3;
 						Fruits[0].Height += BrickSize / 3;
@@ -187,7 +195,7 @@ namespace Snake {
 						Fruits[0].Left -= BrickSize / 6;
 						Fruits[0].Top -= BrickSize / 6;
 						Fruits[0].BringToFront();
-						snake[tail] = Fruits[0];
+						snakeBodie[tail] = Fruits[0];
 						FruitCnt--;
 						//разместить на карте новый фрукт
 						AllocateElement(ElemType.Fruit, maxFruitCnt, Fruits, ref FruitCnt, fruitColor, OnePointMap);
@@ -217,7 +225,7 @@ namespace Snake {
 
 			private void StartGame() {
 				 //очистить старую змейку и всю карту
-				 ClearObject(snake, ref Score);
+				 ClearObject(snakeBodie, ref Score);
 				 ClearObject(Fruits, ref FruitCnt);
 				 ClearObject(Trees, ref TreesCnt);
 				 ClearObject(Stones, ref StoneCnt);
@@ -235,15 +243,15 @@ namespace Snake {
 				 //разместить все объекты на карте
 				 if (AllocateElement(ElemType.Fruit, maxFruitCnt, Fruits, ref FruitCnt, fruitColor, OnePointMap) != 0) { MessageBox.Show("Не удаётся разместить фрукты на карте. Измените параметры"); return; }
 				 if (AllocateElement(ElemType.Stone, maxStoneCnt, Stones, ref StoneCnt, stoneColor, OnePointMap) != 0) { MessageBox.Show("Не удаётся разместить камни на карте. Измените параметры"); return; }
-				 if (AllocateElement(ElemType.Tree, maxTreesCnt, Trees, ref TreesCnt, treeColor, TreeMap) != 0) { MessageBox.Show("Не удаётся разместить деревья на карте. Измените параметры"); return; }
+				 if (AllocateElement(ElemType.Tree,  maxTreesCnt, Trees,  ref TreesCnt, treeColor, TreeMap) != 0) { MessageBox.Show("Не удаётся разместить деревья на карте. Измените параметры"); return; }
 				 if (AllocateElement(ElemType.Water, maxWaterCnt, WaterSpots, ref WaterCnt, waterColor, WaterSpotMap) != 0) { MessageBox.Show("Не удаётся разместить лужи на карте. Измените параметры"); return; }
 
 				 //разместить змейку
-				 if (AllocateElement(ElemType.Snake, 1, snake, ref Score, snakeColor, OnePointMap) != 0) { MessageBox.Show("Не удаётся разместить змейку на карте. Измените параметры"); return; }
+				 if (AllocateElement(ElemType.Snake, 1, snakeBodie, ref Score, snakeColor, OnePointMap) != 0) { MessageBox.Show("Не удаётся разместить змейку на карте. Измените параметры"); return; }
 				 Score--;    //змейку разместили и увеличили размер массива, змейка начинаться должна с 0
-				 snX = snake[0].Left / BrickSize;
-				 snY = snake[0].Top / BrickSize;
-				 start = true;
+				 snX = snakeBodie[0].Left / BrickSize;
+				 snY = snakeBodie[0].Top / BrickSize;
+				 startFlag = true;
 
 				 //snake[0] = new UsedDrawControl();
 				 //snake[0].Size = new Size(BrickSize, BrickSize);
@@ -354,8 +362,9 @@ namespace Snake {
 				 //подгонка макета формы
 				 Width = currMapWidth * BrickSize + ExtFieldWidth;
 				 Height = (currMapHeight + 1) * BrickSize + 25;
-				 btnStart.Left = this.Width - ExtFieldWidth + 10;
-				 btnStart.Width = ExtFieldWidth - 30;
+				 
+				 btnGenerateMap.Left = this.Width - ExtFieldWidth + 10;
+				 btnGenerateMap.Width = ExtFieldWidth - 30;
 				 lblScoreLabel.Left = this.Width - ExtFieldWidth + 10;
 				 lblScore.Left = lblScoreLabel.Bounds.Right;
          /*
@@ -400,22 +409,28 @@ namespace Snake {
 				 }
 			}
 
-			private void Form1_KeyDown(object sender, KeyEventArgs e) {
-				 switch (e.KeyCode) {
-						case Keys.Left: dirX = -1; dirY = 0; break;
-						case Keys.Right: dirX = 1; dirY = 0; break;
-						case Keys.Up: dirY = -1; dirX = 0; break;
-						case Keys.Down: dirY = 1; dirX = 0; break;
-				 }
-				 switch (e.KeyCode) {
-						case Keys.Left:
-						case Keys.Right:
-						case Keys.Up: 
-						case Keys.Down: 
-							 if (start) { timer.Start(); start = false; } 
-							 break;
+			//•ОБРАБОТЧИК НАЖАТИЯ КЛАВИШ
+			private void Form1_KeyDown(object sender, KeyEventArgs e) { /*
+        -задание направления движения змейки
+        -если это первое нажатие
+          -запуск таймера
+        -----------------------------------------------------------*/
+	    switch (e.KeyCode) {
+            case Keys.Escape: 
+              int a=1;
+            break;
+						case Keys.Left: snake.dirX= -1; snake.dirY = 0; goto aa;
+						case Keys.Right: snake.dirX = 1; snake.dirY = 0; goto aa;
+						case Keys.Up: snake.dirY = -1; snake.dirX = 0;   goto aa;
+						case Keys.Down: snake.dirY = 1; snake.dirX = 0;  
+          aa: 
+            if (snake.startFlag) { snake.timer.Start(); startFlag = false; } 
+            if (!snake.timer.Enabled) snake.timer.Start();
+            break;
 				 }
 			}
+
+
 			private void btnStart_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e) {
 				 //контролы перехватывают на себя спец клавиши и они в форму не доходят, поэтому...
 				 switch (e.KeyCode) {
