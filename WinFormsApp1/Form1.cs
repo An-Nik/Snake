@@ -213,14 +213,14 @@ namespace Snake {
 			}
 
 			private void ClearObject(UsedDrawControl[] arr, ref int arr_len) {
-				 //очистка массива объектов
-				 if (arr[0] != null) { 
-						for (int i = arr_len; i >= 0; i--) { 
-							 Controls.Remove(arr[i]);
-							 arr[i] = null;
-						}
-						arr_len = 0;
-				 }
+			  //очистка массива объектов
+				  if (arr[0] != null) { 
+					    for (int i = arr_len; i >= 0; i--) { 
+							    Controls.Remove(arr[i]);
+							    arr[i] = null;
+					    }
+					    arr_len = 0;
+				  }
 			}
 
 			private void StartGame() {
@@ -262,7 +262,7 @@ namespace Snake {
 				 //timer.Start();
 			}
 			private void btnStart_Click(object sender, EventArgs e) {
-				 StartGame();
+				 snake.GenerateMap();
 			}
 
 			//добавить на карту cnt элементов заданного типа. Образец карты в параметре map
@@ -409,25 +409,25 @@ namespace Snake {
 				 }
 			}
 
-			//•ОБРАБОТЧИК НАЖАТИЯ КЛАВИШ
-			private void Form1_KeyDown(object sender, KeyEventArgs e) { /*
-        -задание направления движения змейки
-        -если это первое нажатие
-          -запуск таймера
-        -----------------------------------------------------------*/
-	    switch (e.KeyCode) {
-            case Keys.Escape: 
-              int a=1;
-            break;
-						case Keys.Left: snake.dirX= -1; snake.dirY = 0; goto aa;
-						case Keys.Right: snake.dirX = 1; snake.dirY = 0; goto aa;
-						case Keys.Up: snake.dirY = -1; snake.dirX = 0;   goto aa;
-						case Keys.Down: snake.dirY = 1; snake.dirX = 0;  
-          aa: 
-            if (snake.startFlag) { snake.timer.Start(); startFlag = false; } 
-            if (!snake.timer.Enabled) snake.timer.Start();
-            break;
-				 }
+    //•ОБРАБОТЧИК НАЖАТИЯ КЛАВИШ
+    private void Form1_KeyDown(object sender, KeyEventArgs e) { /*
+          -задание направления движения змейки
+          -если это первое нажатие
+            -запуск таймера
+          -----------------------------------------------------------*/
+	        switch (e.KeyCode) {
+              case Keys.Escape: 
+                int a=1;
+              break;
+						  case Keys.Left: snake.dirX= -1; snake.dirY = 0; goto aa;
+						  case Keys.Right: snake.dirX = 1; snake.dirY = 0; goto aa;
+						  case Keys.Up: snake.dirY = -1; snake.dirX = 0;   goto aa;
+						  case Keys.Down: snake.dirY = 1; snake.dirX = 0;  
+           aa: 
+              if (snake.startFlag) { snake.timer.Start(); startFlag = false; } 
+              if (!snake.timer.Enabled) snake.timer.Start();
+              break;
+				  }
 			}
 
 

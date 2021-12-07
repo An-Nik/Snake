@@ -17,8 +17,9 @@ namespace Snake {
         //ПАРАМЕТРЫ ИГРЫ ......................................................
           public GI gi = GI.Form;                     //режим граф. интерфейса
           private int maxFruitCnt = 1;
+          private int snakeSpeed  = 150;
           public int MaxFruitCnt { get=> maxFruitCnt; set=> maxFruitCnt=value; }    //кол-во фруктов на поле (пока что больше не поддерживается)
-          public int SnakeSpeed  { get; set; } = 150; //скорость змейки
+          public int SnakeSpeed  { get=> snakeSpeed;  set=> snakeSpeed=value;  }    //скорость змейки
 
         /*ПАРАМЕТРЫ ИГРОВОГО ПОЛЯ..............................................*/
           //размеры поля
@@ -41,9 +42,11 @@ namespace Snake {
         /*ПАРАМЕТРЫ ВНЕШНЕГО ВИДА..............................................*/
             public readonly int ExtFieldWidth = 110;     //размер служебного поля на форме
           //цвета
-            public Color SnakeColor   { get; set; } = Color.Gray;
-            public Color SnakeEatColor{ get; set; } = Color.Gray;
-            public Color FruitColor   { get; set; } = Color.Red;
+            public Color SnakeColor     = Color.Gray;
+            public Color SnakeEatColor  = Color.Gray;
+            public Color FruitColor     = Color.Red;
+            public Color TextBoxCnanged = Color.Red;
+            public Color TextBoxApplied = SystemColors.WindowText;
         /*--------------------------------------------------------------------*/
         #endregion
 
@@ -84,6 +87,7 @@ namespace Snake {
           private int newCntrol_LabelWidth = 70;  //ширина подписи
           private int newCntrol_LabelHeight= 20;  //ширина подписи
           private int newCntrol_TextBoxWidth;     //ширина поля ввода (расчит-ся автомат)
+          private Dictionary<string, string> controlValue = new();   //треб для изменения цвета на форме при изменении значения
           
           public enum ElementBitPosition {
 				     EmptyField = 0,
@@ -117,31 +121,35 @@ namespace Snake {
         
           internal Timer timer = new Timer();
 
-        #if TEST
-          private int[,] FruitPoints =  { {4,0}, {6,0}, {9,0}, {13,0}, {16,0} };
-          private Tuple<int, int>[] FruitPoints2 = new Tuple<int, int>[] {
-              Tuple.Create(14, 0), 
-              Tuple.Create(16, 0), 
-              Tuple.Create(18, 0), 
-              Tuple.Create(20, 0), 
-              Tuple.Create(22, 0)
-          };  
-          private int fruitPt_i = 0;
-        #endif
+          #if TEST
+            private int[,] FruitPoints =  { {4,0}, {6,0}, {9,0}, {13,0}, {16,0} };
+            private Tuple<int, int>[] FruitPoints2 = new Tuple<int, int>[] {
+                Tuple.Create(14, 0), 
+                Tuple.Create(16, 0), 
+                Tuple.Create(18, 0), 
+                Tuple.Create(20, 0), 
+                Tuple.Create(22, 0)
+            };  
+            private int fruitPt_i = 0;
+          #endif
         #endregion
         
         /*------------------------------------------------------------------------------------------------------------------*/
         #region ВСПОМОГАТЕЛЬНЫЕ ПРОЦЕДУРЫ (не влияющие на логику работы) 
+
           /*------------------------------------------------------------------------------------------------------------------*/
           private struct ElementsAtXY {
               //список элементов в заданном знакоместе
                 public List<ElementID> list;
+
               //флаги уст элем-тов в заданном знакоместе
                 private int bits;
                 public  int Bits { get=>bits; }
+
               //координаты элемента в массиве карты
                 private Point xy;
 
+              //индексатор, доступ к битам установленнх элементов
                 public bool this [ElementBitPosition index, ElementBitPosition index2 = ElementBitPosition.EmptyField] {
                     get {
                         bool res=(bits & (int)index) != 0;
@@ -161,6 +169,7 @@ namespace Snake {
                         allocatedElements[xy.Y, xy.X] = (ElementBitPosition)bits;
                     }
                 }
+
               /*------------------------------------------------------------------------------------------------------------------*/
               /*Получить список объектов в позиции X,Y */                 
                 public void Read(Point loc, bool showElements = false) {    //private IEnumerable<Elements> ElementsAtXY(Point loc) { 
@@ -208,7 +217,7 @@ namespace Snake {
           /*------------------------------------------------------------------------------------------------------------------*/
 
           /*------------------------------------------------------------------------------------------------------------------*/
-          /*Добавление эл.управл. на форму */
+            /*Добавление эл.управл. на форму */
             private int AddControl(string name, int value) {
               //добавление метки
                 Label lb = new Label { 
@@ -234,21 +243,126 @@ namespace Snake {
                 form.Controls["grParams"].Controls.Add(tb);
                 tb.BringToFront();
 
+              //добавление в словарь значения элемента управления
+                controlValue.Add(tb.Name,value.ToString());
+
+              //назначение обработчика события при измен значения
+                tb.TextChanged += control_TextChanged;
+                tb.KeyPress += control_KeyPress;
+
                 newControl_Ypos += tb.Height + 1;
                 return 0;
             }
           /*------------------------------------------------------------------------------------------------------------------*/
-          /*Чтение значения с формы */
-            private void TakeValue(string controlName, ref int parameterName) {
-                if (int.TryParse(form.Controls["tb"+controlName].Text, out int tmpValue)) {
-                    parameterName = tmpValue;
-                    if (form.Controls["tb"+controlName].BackColor == Color.Tomato) 
-                        form.Controls["tb"+controlName].BackColor=Control.DefaultBackColor; }
+          
+          /*------------------------------------------------------------------------------------------------------------------*/
+            /*Чтение значения с формы */
+            private bool? GetFormValue(string controlName, ref int parameterName) {
+             //true, если получено новое значение
+             //false,если получено то же самое значение
+             //null, если преобразовать в int не удалось
+                try {
+                    //имя и значение элемент управления
+                    var сontrol = form.Controls["grParams"].Controls["tb"+controlName];
+                    int tmpValue = Convert.ToInt32(form.Controls["grParams"].Controls["tb"+controlName].Text); 
+
+                    if (parameterName != tmpValue) {
+                      //получаем значение с формы
+                        parameterName = tmpValue;
+                      //восстановить цвет параметра
+                        сontrol.ForeColor = TextBoxApplied; 
+                      //обновить значение в словаре
+                        controlValue["tb"+controlName]=tmpValue.ToString();
+                        return true;
+                    }
+                    else return false; 
+                }    
+                catch { return null; }
+            }
+          /*------------------------------------------------------------------------------------------------------------------*/
+
+          /*------------------------------------------------------------------------------------------------------------------*/
+            /*прорисовка сетки*/ 
+            void DrawField() {
+                  
+              //обновление размера формы
+                form.Width  = (MapWidth) * BrickSize + ExtFieldWidth + 15;
+                form.Height = (MapHeight + 1)* BrickSize + 25;
+
+              //удалить лишние горизонт и верт линии
+                //если есть лишние линии, то currMapHeight будет больше MapHeight
+                //цикл в сторону уменьшения, удаляем последние линии
+                for (int i = currMapHeight; i > MapHeight; i--) {
+                  form.Controls.Remove(linesX[i]);
+                  linesX[i] = null;
+                }
+                for (int i = currMapWidth; i > MapWidth; i--) {
+                  form.Controls.Remove(linesY[i]);
+                  linesY[i] = null;
+                }
+
+              //добавить недостающие горизонт линии
+                for (int i = MapHeight; i > currMapHeight; i--) {
+                    UsedDrawControl fieldGrid = new UsedDrawControl {
+                      BackColor = Color.Black,
+                      Size = new Size(1, 1),
+                      Location = new Point(0, 0)
+                    };
+                    form.Controls.Add(fieldGrid);
+                    linesX[i] = fieldGrid;
+                }
+              //добавить недостающие верт линии
+                for (int i = MapWidth; i > currMapWidth; i--) {
+                    UsedDrawControl FieldGrid = new UsedDrawControl {
+                      BackColor = Color.Black,
+                      Size = new Size(1,1),
+                      Location = new Point(0,0)
+                    };
+                    form.Controls.Add(FieldGrid);
+                    linesY[i] = FieldGrid;
+                }
+                currMapWidth = MapWidth;
+                currMapHeight = MapHeight;
+
+              //правим размеры горизонт линии
+                for (int i = 0; i <= currMapHeight; i++) {
+                  linesX[i].Size = new Size(currMapWidth * BrickSize, 1);
+                  linesX[i].Location = new Point(0, i * BrickSize);
+                }
+              //правим размеры вертик линии
+                for (int i = 0; i <= currMapWidth; i++) {
+                  linesY[i].Size = new Size(1, currMapHeight * BrickSize);
+                  linesY[i].Location = new Point(i * BrickSize, 0);
+                } 
+                  
+            }
+          /*------------------------------------------------------------------------------------------------------------------*/
+
+          /*------------------------------------------------------------------------------------------------------------------*/
+            /*обработчик событий нажатия клавиш при изменении значений параметров игры*/
+            private void control_TextChanged(object sender, EventArgs e) { /*
+                -если значение в элементе управления равно значению соотв. свойства
+                  -изменить цвет контрола
+                  -иначе - восст. цвет контрола
+                */
+                string parameterName= (sender as TextBox).Name;
+                if (controlValue[parameterName] != ((TextBox)sender).Text) {
+                    ((TextBox)sender).ForeColor = TextBoxCnanged; }
                 else {
-                    form.Controls["tb"+controlName].BackColor=Color.Tomato; 
+                    ((TextBox)sender).ForeColor = TextBoxApplied; 
                 }
             }
           /*------------------------------------------------------------------------------------------------------------------*/
+          
+          /*------------------------------------------------------------------------------------------------------------------*/
+            /*Применение изменений при нажатии Enter*/
+            private void control_KeyPress(object sender, KeyPressEventArgs e) {
+                if (e.KeyChar == (char)Keys.Enter) {
+                    GenerateMap();
+                }
+            }
+          /*------------------------------------------------------------------------------------------------------------------*/
+
         #endregion 
 
         /*------------------------------------------------------------------------------------------------------------------*/
@@ -263,9 +377,15 @@ namespace Snake {
           public Snake() {
               //если режим гафики - элементы управления
               if (gi == GI.Form) {
-                //создать форму и запомнить ссылку на неё
+                //создать форму и получить ссылку на неё
                   form = new Form1(this);
-                  //обработчки клавиш управления в коде формы
+                //вычисление и задание размера формы
+                  form.Width  = (MapWidth) * BrickSize + ExtFieldWidth + 15;
+                  form.Height = (MapHeight + 1)* BrickSize + 25;
+                  DrawField();
+
+                //обработчки событий формы
+                  form.KeyDown += Form1_KeyDown;
 
                 //подготовиться к размещению доп. элементов
                   var btn = form.Controls["grParams"].Controls["btnGenerateMap"];
@@ -281,14 +401,41 @@ namespace Snake {
                   AddControl ("Fruit cnt", MaxFruitCnt);
                   AddControl ("Speed", SnakeSpeed);
               }
+              timer.Tick += Timer_Tick;
+
               if (!GenerateMap()) {
-                /*неуспешное размещение элементов*/ }
-              else {
-                //разрешение запустить игру(таймер) по нажатию клавиш курсура
-                  startFlag = true;
-                  timer.Tick += Timer_Tick;
+                /*неуспешное размещение элементов*/ 
               }
           }
+        /*------------------------------------------------------------------------------------------------------------------*/
+
+        /*------------------------------------------------------------------------------------------------------------------*/
+        //•ОБРАБОТЧИК НАЖАТИЯ КЛАВИШ КУРСОРА
+			    private void Form1_KeyDown(object sender, KeyEventArgs e) { /*
+            -задание направления движения змейки
+            -если это первое нажатие
+              -запуск таймера
+            -----------------------------------------------------------*/
+	        switch (e.KeyCode) {
+                case Keys.Escape: 
+                  int a=1; break;
+						    case Keys.Left: dirX= -1; dirY = 0;  goto aa;
+						    case Keys.Right: dirX = 1; dirY = 0; goto aa;
+						    case Keys.Up: dirY = -1; dirX = 0;   goto aa;
+						    case Keys.Down: dirY = 1; dirX = 0;  
+              aa: 
+                if (startFlag) { 
+                    timer.Start(); 
+                    startFlag = false; 
+                    //обнуление счётчика очков
+                    form.Controls["grParams"].Controls["lblScore"].Text = "0";
+                } 
+                if (!timer.Enabled) {
+                    timer.Start();
+                }
+                break;
+				     }
+			    }
         /*------------------------------------------------------------------------------------------------------------------*/
 
         /*------------------------------------------------------------------------------------------------------------------*/
@@ -315,7 +462,7 @@ namespace Snake {
 				      if (headX < 0 || headX == currMapWidth || headY < 0 || headY == currMapHeight) {
 						      timer.Stop();
 						      MessageBox.Show("Вы проиграли!");
-						      //StartGame();
+						      GenerateMap();
 						      return;
 				      }
 
@@ -342,7 +489,7 @@ namespace Snake {
                   if (elementsAtXY[ElementBitPosition.Snake, ElementBitPosition.EatenFruit]) {
 						          timer.Stop();
 						          MessageBox.Show("Вы проиграли!");
-						          //StartGame();
+						          GenerateMap();
 						          return;
 				          }
 
@@ -445,80 +592,63 @@ namespace Snake {
                 #endif //
           }
         /*------------------------------------------------------------------------------------------------------------------*/
-
+        
         /*------------------------------------------------------------------------------------------------------------------*/
         /*ГЕНЕРАЦИЯ КАРТЫ *//*
           -вычисление и задание размера формы
           -прорисовка сетки поля
           -расположение элементов игры
-          -вызов делегата расположения элементов игры  
-        ----------------------------------------------*/
-          private bool GenerateMap() { 
-            //режим Формы 
-              //ВЫЧИСЛЕНИЕ И ЗАДАНИЕ РАЗМЕРА ФОРМЫ
-                form.Width  = (MapWidth)* BrickSize + ExtFieldWidth + 15;
-                form.Height = (MapHeight + 1)* BrickSize + 25;
+          -вызов делегата расположения элементов игры 
+          */
+          public bool GenerateMap() { 
+            
+            /*------------------------------------------------------------------------------------------------------------------*/
+            //очистить переданый массив
+			        void ClearObject(UsedDrawControl[] arr, ref int arr_len) {
+			          //очистка массива объектов
+				          if (arr[0] != null) { 
+					            for (int i = arr_len; i >= 0; i--) { 
+							            form.Controls.Remove(arr[i]);
+							            arr[i] = null;
+					            }
+					            arr_len = 0;
+				          }
+			        }
+            /*------------------------------------------------------------------------------------------------------------------*/
 
-              /*ПРОРИСОВКА СЕТКИ*/ {
-                //сперва удалить лишние горизонт и верт линии
-                //  если есть лишние линии, то currMapHeight будет больше MapHeight
-                //  цикл в сторону уменьшения, удаляем последние линии
-                  for (int i = currMapHeight; i > MapHeight; i--) {
-                    form.Controls.Remove(linesX[i]);
-                    linesX[i] = null;
-                  }
-                  for (int i = currMapWidth; i > MapWidth; i--) {
-                    form.Controls.Remove(linesY[i]);
-                    linesY[i] = null;
-                  }
+              //чтение новых значений параметров с формы
+                bool? val1 = GetFormValue("MapWidth",  ref mapWidth);
+                bool? val2 = GetFormValue("MapHeight", ref mapHeight);
+                bool? val3 = GetFormValue("Bricksize", ref brickSize);
+                val1 = val1 | val2 | val3;
 
-                //добавить недостающие горизонт линии
-                  for (int i = MapHeight; i > currMapHeight; i--) {
-                      UsedDrawControl fieldGrid = new UsedDrawControl {
-                        BackColor = Color.Black,
-                        Size = new Size(1, 1),
-                        Location = new Point(0, 0)
-                      };
-                      form.Controls.Add(fieldGrid);
-                      linesX[i] = fieldGrid;
-                  }
-                //добавить недостающие верт линии
-                  for (int i = MapWidth; i > currMapWidth; i--) {
-                      UsedDrawControl FieldGrid = new UsedDrawControl {
-                        BackColor = Color.Black,
-                        Size = new Size(1,1),
-                        Location = new Point(0,0)
-                      };
-                      form.Controls.Add(FieldGrid);
-                      linesY[i] = FieldGrid;
-                  }
-                  currMapWidth = MapWidth;
-                  currMapHeight = MapHeight;
+                if (val1 != null & val1 == true) {
+                    DrawField();
+                }
 
-                //правим размеры горизонт линии
-                  for (int i = 0; i <= currMapHeight; i++) {
-                    linesX[i].Size = new Size(currMapWidth * BrickSize, 1);
-                    linesX[i].Location = new Point(0, i * BrickSize);
-                  }
-                //правим размеры вертик линии
-                  for (int i = 0; i <= currMapWidth; i++) {
-                    linesY[i].Size = new Size(1, currMapHeight * BrickSize);
-                    linesY[i].Location = new Point(i * BrickSize, 0);
-                  } 
-              }
-              
+                GetFormValue("Speed", ref snakeSpeed);
+                timer.Interval = snakeSpeed;
+                
               /*РАСПОЛОЖЕНИЕ ЭЛЕМЕНТОВ ИГРЫ*/ {
                 //создадим отдельную локальну структуру для размещения элемента
                   allocatedElements = new ElementBitPosition[MapHeight, MapWidth];
 
+                //очистить все массивы
+                  ClearObject(snakeArr, ref score);
+                  ClearObject(fruits, ref fruitCnt);
+                  //ClearObject(Trees, ref TreesCnt);
+                  //ClearObject(Stones, ref StoneCnt);
+                  //ClearObject(WaterSpots, ref WaterCnt);
+
+
                 //расположение фрукта
                   CustomPoint = new Point (2, 0);
-                  if (!AllocateElement(ElementID.Fruit, MaxFruitCnt,fruits,  ref fruitCnt,FruitColor, onePointMap)) { MessageBox.Show("Не удаётся разместить фрукты на карте. Измените параметры"); return false; }
+                  if (!AllocateElement(ElementID.Fruit, MaxFruitCnt,fruits, ref fruitCnt,FruitColor, onePointMap)) { MessageBox.Show("Не удаётся разместить фрукты на карте. Измените параметры"); return false; }
 
                 //расположение змейки
                   CustomPoint = new Point (0, 0);
-                  if (!AllocateElement(ElementID.Snake, 1,          snakeArr,ref score,   SnakeColor, onePointMap)) { MessageBox.Show("Не удаётся разместить змейку на карте. Измените параметры"); return false; }
-                  score = 0;
+                  if (!AllocateElement(ElementID.Snake, 1,  snakeArr,ref score, SnakeColor, onePointMap)) { MessageBox.Show("Не удаётся разместить змейку на карте. Измените параметры"); return false; }
+                  tail = 0; score = 0;
                   headX = snakeArr[0].Location.X / brickSize;
                   headY = snakeArr[0].Location.Y / brickSize;
 
@@ -546,8 +676,12 @@ namespace Snake {
                   }
               }
 
-              //form.timer.Interval = SnakeSpeed;
-            
+            //разрешение запустить игру(таймер) по нажатию клавиш курсура
+              startFlag = true;
+
+            //убрать курсор со всех полей ввода (активировать кнопку)
+              form.Controls["GrParams"].Controls["btnGenerateMap"].Focus();
+
               return true;
           }
         /*------------------------------------------------------------------------------------------------------------------*/
@@ -637,57 +771,6 @@ namespace Snake {
           private Point CustomPoint;
         /*------------------------------------------------------------------------------------------------------------------*/
 
-        //Пуск змейки
-          public void Start() {
-              //чтение новых значений параметров с формы
-              TakeValue("MapWidth",  ref mapWidth);
-              TakeValue("MapHeight", ref mapHeight);
-              TakeValue("BrickSize", ref brickSize);
-
-             /*/очистить старую змейку и всю карту
-             ClearObject(snake, ref Score);
-             ClearObject(Fruits, ref FruitCnt);
-             ClearObject(Trees, ref TreesCnt);
-             ClearObject(Stones, ref StoneCnt);
-             ClearObject(WaterSpots, ref WaterCnt);
-             _GenerateMap();
-
-             //подготовиться к старту сначала
-             lblScore.Text = "0";
-
-             tail = 0; Score = 0; //head = 0;
-             //dirX = 1; dirY = 0; 
-             //snX = currMapWidth / 2;
-             //snY = currMapHeight / 2;
-
-             //разместить все объекты на карте
-             if (AllocateElement(ElemType.Fruit, maxFruitCnt, Fruits, ref FruitCnt, fruitColor, OnePointMap) != 0) { MessageBox.Show("Не удаётся разместить фрукты на карте. Измените параметры"); return; }
-             if (AllocateElement(ElemType.Stone, maxStoneCnt, Stones, ref StoneCnt, stoneColor, OnePointMap) != 0) { MessageBox.Show("Не удаётся разместить камни на карте. Измените параметры"); return; }
-             if (AllocateElement(ElemType.Tree, maxTreesCnt, Trees, ref TreesCnt, treeColor, TreeMap) != 0) { MessageBox.Show("Не удаётся разместить деревья на карте. Измените параметры"); return; }
-             if (AllocateElement(ElemType.Water, maxWaterCnt, WaterSpots, ref WaterCnt, waterColor, WaterSpotMap) != 0) { MessageBox.Show("Не удаётся разместить лужи на карте. Измените параметры"); return; }
-
-             //разместить змейку
-             if (AllocateElement(ElemType.Snake, 1, snake, ref Score, snakeColor, OnePointMap) != 0) { MessageBox.Show("Не удаётся разместить змейку на карте. Измените параметры"); return; }
-             Score--;    //змейку разместили и увеличили размер массива, змейка начинаться должна с 0
-             snX = snake[0].Left / BrickSize;
-             snY = snake[0].Top / BrickSize;
-             start = true;
-
-             //snake[0] = new UsedDrawControl();
-             //snake[0].Size = new Size(BrickSize, BrickSize);
-             //snake[0].BackColor = snakeColor;
-             //snake[0].Location = new Point(snX * BrickSize, snY * BrickSize);
-             //Controls.Add(snake[0]);
-
-             //timer.Start(); */
-          }
-
-        //Перемещение змейки
-
-        //Проверка попадания на предмет
-
-        //Поедание фрукта
-          
     }
 
 
