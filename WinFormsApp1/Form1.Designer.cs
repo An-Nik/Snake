@@ -58,6 +58,7 @@ namespace Snake {
       this.grParams.Controls.Add(this.btnGenerateMap);
       this.grParams.Controls.Add(this.lblScore);
       this.grParams.Controls.Add(this.lblScoreLabel);
+      this.grParams.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
       this.grParams.Location = new System.Drawing.Point(422, 4);
       this.grParams.Name = "grParams";
       this.grParams.Size = new System.Drawing.Size(110, 527);

@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
+using System.Windows.Forms;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 //using UsedDrawControl = System.Windows.Forms.PictureBox;  //задать контрол, который будет исп-ся для рисования
 using UsedDrawControl = System.Windows.Forms.Label;         //задать контрол, который будет исп-ся для рисования
 
 namespace Snake {
+   using static Snake;
 	 public partial class Form1 : Form {
 	 
 			  public int maxFruitCnt = 1;		//пока что больше не поддерживается
@@ -81,11 +79,8 @@ namespace Snake {
 				 Any	 = -1
 			}
       
-      Snake snake;
-
-			public Form1(Snake snake) {
+			public Form1() {
 				  InitializeComponent();
-          this.snake=snake;
             //Controls["tbBrickSize"].Text = "15";
             //Controls["tbMapHeight"].Text = "30";
             //Controls["tbMapWidth"].Text = "30";
@@ -262,7 +257,7 @@ namespace Snake {
 				 //timer.Start();
 			}
 			private void btnStart_Click(object sender, EventArgs e) {
-				 snake.GenerateMap();
+				 GenerateMap();
 			}
 
 			//добавить на карту cnt элементов заданного типа. Образец карты в параметре map
@@ -419,13 +414,13 @@ namespace Snake {
               case Keys.Escape: 
                 int a=1;
               break;
-						  case Keys.Left: snake.dirX= -1; snake.dirY = 0; goto aa;
-						  case Keys.Right: snake.dirX = 1; snake.dirY = 0; goto aa;
-						  case Keys.Up: snake.dirY = -1; snake.dirX = 0;   goto aa;
-						  case Keys.Down: snake.dirY = 1; snake.dirX = 0;  
+						  case Keys.Left: dirX= -1; dirY = 0; goto aa;
+						  case Keys.Right: dirX = 1; dirY = 0; goto aa;
+						  case Keys.Up: dirY = -1; dirX = 0;   goto aa;
+						  case Keys.Down: dirY = 1; dirX = 0;  
            aa: 
-              if (snake.startFlag) { snake.timer.Start(); startFlag = false; } 
-              if (!snake.timer.Enabled) snake.timer.Start();
+              if (startFlag) { timer.Start(); startFlag = false; } 
+              if (!timer.Enabled) timer.Start();
               break;
 				  }
 			}
